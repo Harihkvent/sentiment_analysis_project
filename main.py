@@ -1,60 +1,54 @@
 import pandas as pd
 import re
 import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report
 import joblib
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 
-# Download NLTK resources (only first run)
+# Download stopwords if not already present
 nltk.download('stopwords')
-nltk.download('wordnet')
+from nltk.corpus import stopwords
 
-# Load dataset
-data = pd.read_csv("twitter_training.csv", header=None, names=["id", "label", "tweet"])
+stop_words = set(stopwords.words("english"))
 
-# --- Text Preprocessing ---
-stop_words = set(stopwords.words('english')) - {"not", "no", "nor"}
-lemmatizer = WordNetLemmatizer()
+# ---------- Preprocessing function ----------
+def clean_text(text):
+    text = str(text).lower()
+    text = re.sub(r"http\S+|www\S+|https\S+", '', text, flags=re.MULTILINE)  # remove links
+    text = re.sub(r'\@w+|\#','', text)  # remove mentions & hashtags
+    text = re.sub(r'[^A-Za-z\s]', '', text)  # keep only letters
+    text = ' '.join([word for word in text.split() if word not in stop_words])
+    return text
 
-def preprocess(text):
-    text = str(text).lower()                          # Lowercase
-    text = re.sub(r'http\S+', '', text)               # Remove URLs
-    text = re.sub(r'[^a-z\s]', '', text)              # Remove punctuation/numbers
-    tokens = text.split()                             # Tokenize
-    tokens = [w for w in tokens if w not in stop_words] 
-    tokens = [lemmatizer.lemmatize(w) for w in tokens]
-    return " ".join(tokens)
+# ---------- Load dataset ----------
+df = pd.read_csv("twitter_training.csv", header=None, names=["id", "label", "tweet"])
 
-# Apply preprocessing
-data['clean_tweet'] = data['tweet'].apply(preprocess)
+# Assuming your dataset has: "tweet" and "label" columns
+df["cleaned"] = df["tweet"].apply(clean_text)
 
-# Features and labels
-X = data['clean_tweet']
-y = data['label']
+# ---------- Split ----------
+X = df["cleaned"]
+y = df["label"]
 
-# Train-Test Split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Build Pipeline (Vectorizer + TF-IDF + Logistic Regression)
-model = Pipeline([
-    ('vect', CountVectorizer()),
-    ('tfidf', TfidfTransformer()),
-    ('clf', LogisticRegression(max_iter=1000)),
-])
+# ---------- Vectorization ----------
+vectorizer = TfidfVectorizer(max_features=5000)
+X_train_vec = vectorizer.fit_transform(X_train)
+X_test_vec = vectorizer.transform(X_test)
 
-# Train Model
-model.fit(X_train, y_train)
+# ---------- Model ----------
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_vec, y_train)
 
-# Evaluate
-y_pred = model.predict(X_test)
-print("Classification Report:")
+# ---------- Evaluation ----------
+y_pred = model.predict(X_test_vec)
 print(classification_report(y_test, y_pred))
 
-# Save Model
+# ---------- Save model & vectorizer ----------
 joblib.dump(model, "sentiment_model.pkl")
-print("✅ Model saved as sentiment_model.pkl")
+joblib.dump(vectorizer, "vectorizer.pkl")
+
+print("✅ Model & Vectorizer saved successfully!")
