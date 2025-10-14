@@ -1,74 +1,193 @@
 # Sentiment Analysis Project
 
-This project provides a complete sentiment analysis solution for tweets, including a Python backend (Flask API, model training) and a modern React + Bootstrap frontend UI.
+A modern full-stack sentiment analysis application with machine learning backend and React frontend.
 
----
+## 🚀 Features
 
-## Features
-- Cleans and preprocesses tweets using NLTK (stopwords, lemmatization)
-- Trains a sentiment analysis model using Logistic Regression
-- Uses scikit-learn pipeline (TF-IDF, Logistic Regression, GridSearchCV)
-- Saves the trained model for later use
-- REST API for sentiment prediction (`app.py`)
-- Modern React UI for easy sentiment analysis
-- Clean, responsive Bootstrap design
+- **Real-time Sentiment Analysis** - Analyze text sentiment instantly
+- **Confidence Scoring** - Get confidence levels for predictions
+- **Batch Processing** - Analyze multiple texts at once
+- **Interactive UI** - Beautiful, responsive React interface
+- **RESTful API** - Well-documented API endpoints
+- **Model Monitoring** - Track model performance and metrics
+- **Docker Support** - Easy deployment with Docker
+- **Comprehensive Testing** - Unit and integration tests
 
----
+## 📋 Prerequisites
 
-## Backend: How to Run Locally
-1. **Install dependencies:**
-	```bash
-	pip install -r requirements.txt
-	```
-2. **Train the model:**
-	```bash
-	python main.py
-	```
-	This will preprocess the data, train the model, and save it as `sentiment_model.pkl`.
-3. **Start the API server:**
-	```bash
-	python app.py
-	```
-	The API will run at http://localhost:5000
+- Python 3.9+
+- Node.js 18+
+- Docker (optional)
 
-## Frontend: How to Run Locally
-1. Open a terminal and navigate to the `frontend` directory:
-	```bash
-	cd frontend
-	```
-2. Install dependencies:
-	```bash
-	npm install
-	```
-3. Start the React development server:
-	```bash
-	npm start
-	```
-	The app will open at http://localhost:3000
-4. Make sure your Flask API is running at http://localhost:5000
+## 🛠️ Installation
 
----
+### Backend Setup
 
-## Testing Locally with Postman
-1. **Start the API server** as above.
-2. **Open Postman** and create a new POST request to:
-	```
-	http://localhost:5000/predict
-	```
-3. **Set the request body** to `raw` and `JSON`, for example:
-	```json
-	{
-	  "text": "I love this product!"
-	}
-	```
-4. **Send the request**. You should receive a JSON response with the predicted sentiment.
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
 
----
+### Train the Model
 
-## UI Features
-- Enter tweet text and analyze sentiment instantly
-- Clean, modern UI with Bootstrap
-- Displays sentiment result from your Flask backend
+```bash
+cd backend
+python train_model.py
+```
 
----
-Modify the endpoint and request body as needed based on your `app.py` implementation.
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+```
+
+## 🏃 Running the Application
+
+### Using Docker (Recommended)
+
+```bash
+docker-compose up
+```
+
+### Manual Setup
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+python app.py
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm start
+```
+
+Access the application at `http://localhost:3000`
+
+## 🧪 Testing
+
+### Backend Tests
+
+```bash
+cd backend
+pytest tests/ --verbose --cov
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+npm test
+```
+
+## 📚 API Documentation
+
+### Endpoints
+
+#### Health Check
+```http
+GET /api/health
+```
+
+#### Predict Sentiment
+```http
+POST /api/predict
+Content-Type: application/json
+
+{
+  "text": "Your text here"
+}
+```
+
+#### Batch Predict
+```http
+POST /api/batch-predict
+Content-Type: application/json
+
+{
+  "texts": ["Text 1", "Text 2", "Text 3"]
+}
+```
+
+#### Model Information
+```http
+GET /api/model-info
+```
+
+## 📊 Model Performance
+
+- **Algorithm**: Logistic Regression with TF-IDF
+- **Cross-validation Score**: ~85%
+- **Features**: TF-IDF vectorization with n-grams
+
+## 🔧 Configuration
+
+Create a `.env` file in the backend directory:
+
+```env
+FLASK_ENV=development
+MODEL_PATH=../models/sentiment_model.pkl
+LOG_LEVEL=INFO
+CORS_ORIGINS=http://localhost:3000
+RATE_LIMIT=100 per hour
+```
+
+## 📁 Project Structure
+
+```
+sentiment_analysis_project/
+├── backend/
+│   ├── app.py
+│   ├── train_model.py
+│   ├── config.py
+│   ├── utils/
+│   │   ├── preprocessing.py
+│   │   └── logger.py
+│   └── tests/
+├── frontend/
+│   └── src/
+│       ├── components/
+│       ├── services/
+│       └── styles/
+├── models/
+├── logs/
+└── docker-compose.yml
+```
+
+## 🚀 Deployment
+
+### Production Checklist
+
+- [ ] Set `FLASK_ENV=production`
+- [ ] Configure proper CORS origins
+- [ ] Set up SSL/TLS certificates
+- [ ] Configure logging and monitoring
+- [ ] Set up database for storing predictions (optional)
+- [ ] Configure rate limiting
+- [ ] Set up CI/CD pipeline
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📝 License
+
+MIT License
+
+## 👥 Authors
+
+Your Name
+
+## 🙏 Acknowledgments
+
+- scikit-learn for machine learning tools
+- NLTK for text processing
+- React community for frontend components
