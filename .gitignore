@@ -1,3 +1,16 @@
+# React/Node
+frontend/node_modules/
+frontend/build/
+frontend/.env
+
+# Model files
+*.pkl
+*.joblib
+
+# Misc
+*.bak
+*.swp
+*.swo
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
