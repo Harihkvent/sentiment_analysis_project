@@ -13,17 +13,17 @@ function App() {
 
   const getSentimentColor = (sentiment) => {
     const sentimentLower = sentiment.toLowerCase();
-    if (sentimentLower.includes('positive')) return 'success';
-    if (sentimentLower.includes('negative')) return 'danger';
-    if (sentimentLower.includes('neutral')) return 'warning';
+    if (sentimentLower === 'positive') return 'success';
+    if (sentimentLower === 'negative') return 'danger';
+    if (sentimentLower === 'neutral') return 'warning';
     return 'info';
   };
 
   const getSentimentEmoji = (sentiment) => {
     const sentimentLower = sentiment.toLowerCase();
-    if (sentimentLower.includes('positive')) return '😊';
-    if (sentimentLower.includes('negative')) return '😞';
-    if (sentimentLower.includes('neutral')) return '😐';
+    if (sentimentLower === 'positive') return '😊';
+    if (sentimentLower === 'negative') return '😞';
+    if (sentimentLower === 'neutral') return '😐';
     return '🤔';
   };
 
@@ -161,7 +161,7 @@ function App() {
                     <div className="d-flex align-items-center mb-2">
                       <span className="fs-2 me-2">{getSentimentEmoji(result.sentiment)}</span>
                       <div>
-                        <h5 className="mb-0">Sentiment: {result.sentiment}</h5>
+                        <h5 className="mb-0">Sentiment: <strong>{result.sentiment.charAt(0).toUpperCase() + result.sentiment.slice(1)}</strong></h5>
                         {result.confidence && (
                           <small>Confidence: {(result.confidence * 100).toFixed(2)}%</small>
                         )}
@@ -218,7 +218,7 @@ function App() {
                           <div className="flex-grow-1">
                             <div className="mb-1">
                               <span className={`badge bg-${getSentimentColor(item.sentiment)} me-2`}>
-                                {item.sentiment}
+                                {item.sentiment.charAt(0).toUpperCase() + item.sentiment.slice(1)}
                               </span>
                               {item.confidence && (
                                 <small className="text-muted">

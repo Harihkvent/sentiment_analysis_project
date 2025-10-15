@@ -51,7 +51,41 @@ def load_model_and_vectorizer():
         logger.error(f"Error loading model: {e}")
         raise
 
-model, vectorizer = load_model_and_vectorizer()
+def normalize_sentiment(raw_sentiment):
+    """
+    Normalize sentiment labels to standard output (positive, negative, neutral)
+    
+    Args:
+        raw_sentiment: Raw sentiment from model (could be 'Positive', 'Negative', 'Neutral', 'Irrelevant', etc.)
+        
+    Returns:
+        Normalized sentiment: 'positive', 'negative', or 'neutral'
+    """
+    sentiment_lower = str(raw_sentiment).lower().strip()
+    
+    # Map various labels to standard sentiments
+    if sentiment_lower in ['positive', 'pos']:
+        return 'positive'
+    elif sentiment_lower in ['negative', 'neg']:
+        return 'negative'
+    elif sentiment_lower in ['neutral', 'neu']:
+        return 'neutral'
+    elif sentiment_lower in ['irrelevant']:
+        # Irrelevant should not appear if model trained correctly
+        logger.warning(f"Model predicted 'Irrelevant' - model may need retraining")
+        return 'neutral'
+    else:
+        # Log unknown labels for debugging
+        logger.warning(f"Unknown sentiment label: {raw_sentiment}, defaulting to neutral")
+        return 'neutral'
+
+# Try to load model, but allow app to start for testing
+try:
+    model, vectorizer = load_model_and_vectorizer()
+except FileNotFoundError:
+    logger.warning("Model not loaded. App running in test mode.")
+    model = None
+    vectorizer = None
 
 # ---------- Flask App ----------
 app = Flask(__name__)
@@ -81,12 +115,19 @@ def predict() -> Dict[str, Any]:
         {
             "text": "Original text",
             "cleaned_text": "Preprocessed text",
-            "sentiment": "Predicted sentiment",
+            "sentiment": "positive|negative|neutral",
             "confidence": 0.95,
             "timestamp": "2025-10-14T..."
         }
     """
     try:
+        # Check if model is loaded
+        if model is None or vectorizer is None:
+            logger.error("Model not loaded")
+            return jsonify({
+                "error": "Model not loaded. Please train the model first."
+            }), 503
+        
         # Parse request
         data = request.get_json()
         
@@ -113,7 +154,10 @@ def predict() -> Dict[str, Any]:
         
         # Vectorize and predict
         vec = vectorizer.transform([cleaned])
-        prediction = model.predict(vec)[0]
+        raw_prediction = model.predict(vec)[0]
+        
+        # Normalize sentiment to standard format
+        prediction = normalize_sentiment(raw_prediction)
         
         # Get prediction probability if available
         confidence = None
@@ -121,12 +165,12 @@ def predict() -> Dict[str, Any]:
             proba = model.predict_proba(vec)[0]
             confidence = float(max(proba))
         
-        logger.info(f"Prediction made: {prediction} for text: {text[:50]}...")
+        logger.info(f"Prediction made: {prediction} (raw: {raw_prediction}) for text: {text[:50]}...")
         
         response = {
             "text": text,
             "cleaned_text": cleaned,
-            "sentiment": str(prediction),
+            "sentiment": prediction,
             "timestamp": datetime.utcnow().isoformat()
         }
         

@@ -27,16 +27,14 @@ def load_data():
     logger.info("Loading dataset...")
     
     try:
-        # Load both datasets
-        train_df = pd.read_csv('twitter_training.csv', header=None, 
-                              names=['id', 'label', 'source', 'tweet'])
-        val_df = pd.read_csv('twitter_validation.csv', header=None,
-                            names=['id', 'label', 'source', 'tweet'])
+        # Load both datasets - they have headers!
+        train_df = pd.read_csv('twitter_training.csv')
+        val_df = pd.read_csv('twitter_validation.csv')
         
         # Combine datasets
         df = pd.concat([train_df, val_df], ignore_index=True)
         
-        # Keep only necessary columns
+        # Keep only necessary columns (label and tweet)
         df = df[['label', 'tweet']]
         
         logger.info(f"Loaded {len(df)} samples")
@@ -57,6 +55,12 @@ def clean_and_filter_data(df):
     initial_count = len(df)
     df = df.dropna(subset=['tweet', 'label'])
     logger.info(f"Removed {initial_count - len(df)} samples with missing values")
+    
+    # Filter to only keep Positive, Negative, and Neutral labels (exclude Irrelevant)
+    initial_count = len(df)
+    df = df[df['label'].isin(['Positive', 'Negative', 'Neutral'])]
+    logger.info(f"Removed {initial_count - len(df)} samples with 'Irrelevant' label")
+    logger.info(f"Keeping only Positive, Negative, and Neutral labels")
     
     # Preprocess text
     logger.info("Preprocessing text data...")
